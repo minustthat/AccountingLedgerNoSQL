@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,5 +20,6 @@ public class Customer {
     String address;
     String zipCode;
     String phoneNumber;
-    String balance;
+    double balance;
+    List<Transaction> transactions;
 }
