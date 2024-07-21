@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
+@CrossOrigin
 public class TransactionController {
 
 TransactionRepository transactionRepository;
@@ -38,8 +39,8 @@ public TransactionController(TransactionRepository transactionRepository){
                 .toList();
     }
 
-    @GetMapping("{year}")
-    public List<Transaction> getTransactionsByYear(@PathVariable int year){
+    @GetMapping("/{year:\\d+}")
+    public List<Transaction> getTransactionsByYear(@PathVariable Integer year){
     return transactionRepository.findAll().stream()
             .filter(t-> t.getTransactionDate().getYear() == year)
             .toList();
@@ -61,6 +62,13 @@ public TransactionController(TransactionRepository transactionRepository){
     public List<Transaction> getDeposits(){
     return transactionRepository.findAll().stream()
             .filter(t-> t.getTransactionType().equals("deposit"))
+            .toList();
+    }
+
+    @GetMapping("/{vendor:.*\\D.*}")
+    public List<Transaction> getByVendor(@PathVariable String vendor){
+    return transactionRepository.findAll().stream()
+            .filter(t-> t.getVendor().equalsIgnoreCase(vendor))
             .toList();
     }
 
