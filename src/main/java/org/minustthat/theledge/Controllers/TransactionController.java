@@ -7,6 +7,8 @@ import org.minustthat.theledge.Repositories.AuthenticatedUserRepository;
 import org.minustthat.theledge.Repositories.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -17,6 +19,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/transactions")
 @CrossOrigin
+@EnableMethodSecurity
 public class TransactionController {
     @Autowired
     AuthenticatedUserRepository authenticatedUserRepository;
@@ -31,67 +34,105 @@ public TransactionController(TransactionRepository transactionRepository){
 }
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isAuthenticated()")
     public List<Transaction> getAllTransactions(Principal principal){
-        return transactionRepository.findAll();
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
+        return transactionRepository.findAll()
+                .stream()
+                .filter(t-> t.getCustomerId() == foundUser.getCustomerId())
+                .toList();
 
     }
 
     @GetMapping("/thisMonth")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getTransactionsThisMonth(){
+    @PreAuthorize("isAuthenticated()")
+    public List<Transaction> getTransactionsThisMonth(Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
     return transactionRepository.findAll().stream()
-            .filter(t-> t.getTransactionDate().getMonth() == today.getMonth())
+            .filter(t-> t.getTransactionDate().getMonth() == today.getMonth() && t.getCustomerId() == foundUser.getCustomerId())
             .toList();
     }
 
     @GetMapping("/thisYear")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getTransactionsThisYear(){
+    @PreAuthorize("isAuthenticated()")
+    public List<Transaction> getTransactionsThisYear(Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
         return transactionRepository.findAll().stream()
-                .filter(t-> t.getTransactionDate().getYear() == today.getYear())
+                .filter(t-> t.getTransactionDate().getYear() == today.getYear() && t.getCustomerId() == foundUser.getCustomerId())
                 .toList();
     }
 
     @GetMapping("/{year:\\d+}")
+    @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getTransactionsByYear(@PathVariable Integer year){
+    public List<Transaction> getTransactionsByYear(@PathVariable Integer year, Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
     return transactionRepository.findAll().stream()
-            .filter(t-> t.getTransactionDate().getYear() == year)
+            .filter(t-> t.getTransactionDate().getYear() == year && t.getCustomerId() == foundUser.getCustomerId())
             .toList();
     }
 
     @PostMapping("/transaction")
+    @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.CREATED)
-    public Transaction addTransaction(@RequestBody Transaction transaction){
+    public Transaction addTransaction(@RequestBody Transaction transaction, Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
+    transaction.setCustomerId(foundUser.getCustomerId());
     return transactionRepository.save(transaction);
     }
 
     @GetMapping("/purchases")
+    @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getPurchases(){
+    public List<Transaction> getPurchases(Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
     return transactionRepository.findAll().stream()
-            .filter(t-> t.getTransactionType().equals("purchase"))
+            .filter(t-> t.getTransactionType().equals("purchase") && t.getCustomerId() == foundUser.getCustomerId())
             .toList();
     }
 
     @GetMapping("/deposits")
+    @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getDeposits(){
+    public List<Transaction> getDeposits(Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
     return transactionRepository.findAll().stream()
-            .filter(t-> t.getTransactionType().equals("deposit"))
+            .filter(t-> t.getTransactionType().equals("deposit") && t.getCustomerId() == foundUser.getCustomerId())
             .toList();
     }
 
     @GetMapping("/{vendor:.*\\D.*}")
+    @PreAuthorize("isAuthenticated()")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getByVendor(@PathVariable String vendor){
+    public List<Transaction> getByVendor(@PathVariable String vendor, Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
     return transactionRepository.findAll().stream()
-            .filter(t-> t.getVendor().equalsIgnoreCase(vendor))
+            .filter(t-> t.getVendor().equalsIgnoreCase(vendor) && t.getCustomerId() == foundUser.getCustomerId())
             .toList();
     }
 
 
     @GetMapping("/balance")
+    @PreAuthorize("isAuthenticated()")
+    @ResponseStatus(HttpStatus.OK)
     public double getBalance(Principal principal){
     String username = principal.getName();
     Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);

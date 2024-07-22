@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 
 @Document(collection="Transactions")
 public class Transaction {
-@JsonIgnore
     private int customerId;
     private int amount;
     private LocalDateTime transactionDate;
