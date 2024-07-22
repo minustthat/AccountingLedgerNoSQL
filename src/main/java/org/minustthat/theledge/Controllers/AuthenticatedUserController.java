@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+import java.util.Optional;
+
 @RestController
 
 public class AuthenticatedUserController {
@@ -46,6 +49,15 @@ public class AuthenticatedUserController {
 return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
+    }
+
+    // testing if this actually updates for the current user
+    @GetMapping("/me")
+    public int getCurrentUser(Principal principal){
+        String username = principal.getName();
+        Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+        AuthenticatedUser foundUser = user.get();
+        return foundUser.getCustomerId();
     }
 
 

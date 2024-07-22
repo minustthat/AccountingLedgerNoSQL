@@ -100,9 +100,9 @@ public TransactionController(TransactionRepository transactionRepository){
     foundUser.setTransactions(transactions);
     double balance = foundUser.getBalance();
     for(Transaction t : foundUser.getTransactions()){
-        if(t.getTransactionType().equalsIgnoreCase("Deposit")){
+        if(t.getTransactionType().equalsIgnoreCase("Deposit") && t.getCustomerId() == foundUser.getCustomerId()){
             foundUser.setBalance(balance += t.getAmount());
-        } else if(t.getTransactionType().equalsIgnoreCase("Purchase")){
+        } else if(t.getTransactionType().equalsIgnoreCase("Purchase") && t.getCustomerId() == foundUser.getCustomerId()){
             foundUser.setBalance(balance -= t.getAmount());
         }
     }
