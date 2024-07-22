@@ -1,7 +1,9 @@
 package org.minustthat.theledge.Controllers;
 
+import org.minustthat.theledge.Models.AuthenticatedUser;
 import org.minustthat.theledge.Models.Customer;
 import org.minustthat.theledge.Models.Transaction;
+import org.minustthat.theledge.Repositories.AuthenticatedUserRepository;
 import org.minustthat.theledge.Repositories.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,12 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/transactions")
 @CrossOrigin
 public class TransactionController {
-
+    @Autowired
+    AuthenticatedUserRepository authenticatedUserRepository;
 TransactionRepository transactionRepository;
 LocalDateTime today;
     Transaction transaction;
@@ -27,8 +31,9 @@ public TransactionController(TransactionRepository transactionRepository){
 }
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> getAllTransactions(){
+    public List<Transaction> getAllTransactions(Principal principal){
         return transactionRepository.findAll();
+
     }
 
     @GetMapping("/thisMonth")
@@ -87,15 +92,18 @@ public TransactionController(TransactionRepository transactionRepository){
 
 
     @GetMapping("/balance")
-    public double getBalance(){
-    List<Transaction> transactions = getAllTransactions();
-    customer.setTransactions(transactions);
-    double balance = customer.getBalance();
-    for(Transaction t : customer.getTransactions()){
+    public double getBalance(Principal principal){
+    String username = principal.getName();
+    Optional<AuthenticatedUser> user = authenticatedUserRepository.findByUsername(username);
+    AuthenticatedUser foundUser = user.get();
+    List<Transaction> transactions = getAllTransactions(principal);
+    foundUser.setTransactions(transactions);
+    double balance = foundUser.getBalance();
+    for(Transaction t : foundUser.getTransactions()){
         if(t.getTransactionType().equalsIgnoreCase("Deposit")){
-            customer.setBalance(balance += t.getAmount());
+            foundUser.setBalance(balance += t.getAmount());
         } else if(t.getTransactionType().equalsIgnoreCase("Purchase")){
-            customer.setBalance(balance -= t.getAmount());
+            foundUser.setBalance(balance -= t.getAmount());
         }
     }
     return balance;

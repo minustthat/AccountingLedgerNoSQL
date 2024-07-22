@@ -19,9 +19,7 @@ import java.time.LocalDateTime;
 
 @Document(collection="Transactions")
 public class Transaction {
-@Id
 @JsonIgnore
-    private BigInteger id;
     private int customerId;
     private int amount;
     private LocalDateTime transactionDate;

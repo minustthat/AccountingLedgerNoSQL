@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 public class AuthenticatedUser {
     @Indexed
     private String username;
+    private int customerId;
     private String password;
     private boolean enabled;
     private String firstName;
@@ -25,5 +27,6 @@ public class AuthenticatedUser {
     private String address;
     private String zipCode;
     private String phoneNumber;
-    private String balance;
+    private double balance;
+    private List<Transaction> transactions;
 }
